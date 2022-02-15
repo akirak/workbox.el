@@ -6,9 +6,7 @@ Bind a key to =project-hercules-dispatch= command.
 You can define the default keymap by customizing =project-hercules-composed-maps=.
 See =project-hercules-config.el= for an example.
 ** Usage
-Use =project-hercules-make-map= to define per-project keymaps.
-
-Example:
+Use =project-hercules-make-map= to define per-project keymaps, e.g.
 
 #+begin_src emacs-lisp
   ;; Rather than using `with-eval-after-load', using `eval-after-load' and giving
@@ -23,3 +21,5 @@ Example:
         (define-key map (kbd "c") #'my-nixos-rebuild-build)
         (define-key map (kbd "R") #'my-nixos-rebuild-switch))))
 #+end_src
+
+Then you can dispatch the keymap for the project using =project-hercules-dispatch=.
