@@ -1,0 +1,20 @@
+* project-hercules.el
+This is a convenient helper for defining per-project transient keymaps using [[https://gitlab.com/jjzmajic/hercules.el][hercules.el]].
+** Configuration
+Bind a key to =project-hercules-dispatch= command.
+
+You can define the default keymap by customizing =project-hercules-composed-maps=.
+See =project-hercules-config.el= for an example.
+** Usage
+Use =project-hercules-make-map= to define per-project keymaps.
+
+Example:
+
+#+begin_src emacs-lisp
+  (with-eval-after-load 'project-hercules
+    (let ((map (project-hercules-make-map "~/config/"
+                                          :hide-funs '(my-hercules-exit)
+                                          :transient t)))
+      ;; Add your keybindings...
+      (define-key map (kbd "q") #'my-hercules-exit)))
+#+end_src
