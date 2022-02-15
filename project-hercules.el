@@ -13,6 +13,10 @@
   "The default parent parent map of composed keymaps."
   :type '(choice null keymap))
 
+(defcustom project-hercules-hide-funs nil
+  "List of functions added to :hide-funs by default."
+  :type '(repeat symbol))
+
 (defcustom project-hercules-dispatch-fallback t
   "Whether to define a project keymap when none is found."
   :type 'boolean)
@@ -23,8 +27,14 @@
 
 (cl-defmacro project-hercules-make-map (root &rest hercules-args
                                              &key init &allow-other-keys)
-  (let ((hercules-args (project-hercules--remove-plist hercules-args
-                                                       :init)))
+  (let ((hide-funs (append (plist-get hercules-args :hide-funs)
+                           ;; The last argument is not copied, so mutations to
+                           ;; the original variable would affect existing
+                           ;; definitions.
+                           project-hercules-hide-funs))
+        (hercules-args (thread-first hercules-args
+                         (project-hercules--remove-plist :init)
+                         (project-hercules--remove-plist :hide-funs))))
     `(progn
        (project-hercules--ensure)
        (let* ((root (project-hercules--normalize-root ,root))
@@ -39,6 +49,7 @@
            (puthash root command project-hercules-commands))
          (hercules-def
           :show-funs command
+          :hide-funs ,hide-funs
           :keymap map-symbol
           ,@hercules-args)
          (symbol-value map-symbol)))))
