@@ -39,6 +39,7 @@
           ,@hercules-args)
          (symbol-value map-symbol)))))
 
+;;;###autoload
 (defun project-hercules-dispatch ()
   (interactive)
   (if-let (root (project-root (project-current)))
