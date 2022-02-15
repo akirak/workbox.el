@@ -2,6 +2,11 @@
 
 (require 'project-hercules)
 
+(setq project-hercules-parent-map (let ((map (make-sparse-keymap)))
+                                    (define-key map "q" #'project-hercules-exit)
+                                    map)
+      project-hercules-hide-funs #'project-hercules-exit)
+
 (defvar project-hercules-nix-map
   (let ((map (make-sparse-keymap)))
     (define-key map "f" #'nix-flake-dispatch)
