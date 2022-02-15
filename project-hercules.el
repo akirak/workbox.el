@@ -3,6 +3,12 @@
 (require 'hercules)
 (require 'project)
 
+(defcustom project-hercules-composed-maps nil
+  "A set of rules for composing keymaps."
+  :type '(repeat (list (choice filename
+                               function)
+                       symbol)))
+
 (defvar project-hercules-commands nil)
 
 (defun project-hercules--ensure ()
@@ -39,7 +45,19 @@
 
 (defun project-hercules--make-default-map (root)
   "Create the default keymap for ROOT."
-  (make-sparse-keymap))
+  (let ((matches (seq-filter (lambda (rule)
+                               (project-hercules--test-rule (car rule)
+                                                            root))
+                             project-hercules-composed-maps)))
+    (make-composed-keymap
+     (seq-map (pcase-lambda (`(,_ ,map-symbol . ,_))
+                (symbol-value map-symbol))
+              matches))))
+
+(defun project-hercules--test-rule (condition root)
+  "Test the CONDITION of a rule against ROOT."
+  (cl-etypecase condition
+    (string (file-exists-p (expand-file-name condition root)))))
 
 (cl-defmacro project-hercules-make-map (root &rest hercules-args
                                              &key init &allow-other-keys)
