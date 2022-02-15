@@ -9,6 +9,10 @@
                                function)
                        symbol)))
 
+(defcustom project-hercules-dispatch-fallback t
+  "Whether to define a project keymap when none is found."
+  :type 'boolean)
+
 (defvar project-hercules-commands nil)
 
 (defun project-hercules--ensure ()
@@ -94,7 +98,11 @@
   (if-let (root (project-root (project-current)))
       (if-let (command (project-hercules--find-by-root root))
           (funcall-interactively command)
-        (user-error "Not found for project %s" root))
+        (if project-hercules-dispatch-fallback
+            (progn
+              (project-hercules-make-map root)
+              (project-hercules-dispatch))
+          (user-error "Not found for project %s" root)))
     (user-error "No project found")))
 
 (provide 'project-hercules)
