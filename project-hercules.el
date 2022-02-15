@@ -105,5 +105,20 @@
           (user-error "Not found for project %s" root)))
     (user-error "No project found")))
 
+(defun project-hercules--get-map (root)
+  "Return a list of keymaps for ROOT, if any."
+  (when-let* ((command (project-hercules--find-by-root root))
+              (symbol (get command 'project-hercules-map)))
+    (accessible-keymaps (symbol-value symbol))))
+
+(defun project-hercules-display-keymap (root)
+  "Display the keymap for the current project."
+  (interactive (list (or (project-root (project-current))
+                         (user-error "Not in a project"))))
+  (pp-display-expression (or (project-hercules--get-map root)
+                             (user-error "No definition for root %s"
+                                         root))
+                         "*Hercules Keymap*"))
+
 (provide 'project-hercules)
 ;;; project-hercules.el ends here
