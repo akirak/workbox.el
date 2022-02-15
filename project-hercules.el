@@ -9,6 +9,10 @@
                                function)
                        symbol)))
 
+(defcustom project-hercules-parent-map nil
+  "The default parent parent map of composed keymaps."
+  :type '(choice null keymap))
+
 (defcustom project-hercules-dispatch-fallback t
   "Whether to define a project keymap when none is found."
   :type 'boolean)
@@ -63,7 +67,8 @@
     (make-composed-keymap
      (seq-map (pcase-lambda (`(,_ ,map-symbol . ,_))
                 (symbol-value map-symbol))
-              matches))))
+              matches)
+     project-hercules-parent-map)))
 
 (defun project-hercules--test-rule (condition root)
   "Test the CONDITION of a rule against ROOT."
