@@ -33,12 +33,17 @@
 
 (require 'hercules)
 (require 'project)
+(require 'subr-x)
+
+(declare-function pp-display-expression "pp")
 
 (defgroup project-hercules nil
   "A helper macro for per-project keymaps."
   :prefix "project-hercules-"
   :group 'project
   :group 'hercules)
+
+(require 'project-hercules-utils)
 
 (defcustom project-hercules-composed-maps nil
   "A set of rules for composing keymaps."
@@ -47,7 +52,7 @@
                        symbol)))
 
 (defcustom project-hercules-hide-funs
-  '(project-hercules-exit)
+  nil
   "List of functions added to :hide-funs by default."
   :type '(repeat symbol))
 
@@ -68,19 +73,8 @@ The user should not set this variable.")
 
 ;;;; Primary API
 
-;; This needs to be defined in prior to `project-hercules-make-map'.
-(defun project-hercules--remove-plist (plist prop)
-  (cond
-   ((null plist) plist)
-   ((eq prop (car plist))
-    (project-hercules--remove-plist (cddr plist) prop))
-   (t
-    `(,(nth 0 plist)
-      ,(nth 1 plist)
-      ,@(project-hercules--remove-plist (cddr plist) prop)))))
-
-(cl-defmacro project-hercules-make-map (root &rest hercules-args
-                                             &key init &allow-other-keys)
+(cl-defun project-hercules-make-map (root &rest hercules-args
+                                          &key init &allow-other-keys)
   "Define a hercules command for a project root.
 
 ROOT should be the root directory of a project.
@@ -89,7 +83,7 @@ You can pass HERCULES-ARGS to `hercules-def' except for
 :show-funs and :keymaps. Also, `project-hercules-hide-funs' is
 added to :hide-funs.
 
-If INIT is an expression, its evaluation result will be the
+If INIT is a quoted expression, its evaluation result will be the
 initial value of the keymap. Otherwise, a composed keymap is
 created from `project-hercules-parent-map' according to rules
 defined in `project-hercules-composed-maps'. See
@@ -98,30 +92,30 @@ defined in `project-hercules-composed-maps'. See
                            ;; The last argument is not copied, so mutations to
                            ;; the original variable would affect existing
                            ;; definitions.
-                           project-hercules-hide-funs))
+                           (bound-and-true-p project-hercules-hide-funs)))
         (hercules-args (thread-first hercules-args
                          (project-hercules--remove-plist :init)
                          (project-hercules--remove-plist :hide-funs))))
-    `(progn
-       (project-hercules--ensure)
-       (let* ((root (project-hercules--normalize-root ,root))
-              (command (gethash root project-hercules-commands))
-              (map-symbol (when command
-                            (or (get command 'project-hercules-map)
-                                (error "Keymap for %s is not found" command)))))
-         (if command
-             (project-hercules--make-default-map root (symbol-value map-symbol))
-           (setq command (make-symbol "project-hercules-command"))
-           (setq map-symbol (make-symbol "project-hercules-map"))
-           (set map-symbol ,(or init '(project-hercules--make-default-map root)))
-           (put command 'project-hercules-map map-symbol)
-           (puthash root command project-hercules-commands))
-         (hercules-def
-          :show-funs command
-          :hide-funs ',hide-funs
-          :keymap map-symbol
-          ,@hercules-args)
-         (symbol-value map-symbol)))))
+    (project-hercules--ensure)
+    (let* ((root (project-hercules--normalize-root root))
+           (command (gethash root project-hercules-commands))
+           (map-symbol (when command
+                         (or (get command 'project-hercules-map)
+                             (error "Keymap for %s is not found" command)))))
+      (if command
+          (project-hercules--make-default-map root (symbol-value map-symbol))
+        (setq command (make-symbol "project-hercules-command"))
+        (setq map-symbol (make-symbol "project-hercules-map"))
+        (set map-symbol (or (eval init)
+                            (project-hercules--make-default-map root)))
+        (put command 'project-hercules-map map-symbol)
+        (puthash root command project-hercules-commands))
+      (apply #'hercules-def
+             :show-funs command
+             :hide-funs hide-funs
+             :keymap map-symbol
+             hercules-args)
+      (symbol-value map-symbol))))
 
 ;;;###autoload
 (defun project-hercules-dispatch ()
@@ -191,6 +185,7 @@ form."
   "Display the keymap for the current project ROOT."
   (interactive (list (or (project-root (project-current))
                          (user-error "Not in a project"))))
+  (require 'pp)
   (pp-display-expression (or (project-hercules--get-map root)
                              (user-error "No definition for root %s"
                                          root))
@@ -215,10 +210,7 @@ form."
   (project-hercules--ensure)
   (or (gethash (project-hercules--normalize-root root)
                project-hercules-commands)
-      (when-let (worktrees (let ((default-directory root))
-                             (thread-last (magit-list-worktrees)
-                               (mapcar #'car)
-                               (delq root))))
+      (when-let (worktrees (project-hercules--git-worktrees root))
         (catch 'found
           (dolist (worktree worktrees)
             (when-let (command (gethash (project-hercules--normalize-root worktree)
@@ -230,8 +222,21 @@ form."
 (defun project-hercules--normalize-root (root)
   (file-truename (file-name-as-directory root)))
 
-;; Only close the transient keymap.
-(fset 'project-hercules-exit #'ignore)
+(defun project-hercules--git-worktrees (root)
+  "Return git worktrees for ROOT."
+  (let ((default-directory root))
+    (cl-remove (expand-file-name (string-remove-suffix "/" root))
+               (thread-last (process-lines "git" "--no-pager"
+                                           "worktree" "list" "--porcelain")
+                 (mapcar (lambda (line)
+                           (save-match-data
+                             (when (string-match (rx bol "worktree " (group (+ anything)))
+                                                 line)
+                               (match-string 1 line)))))
+                 (delq nil))
+               :test #'equal)))
+
+(defalias 'project-hercules-exit #'ignore)
 
 (provide 'project-hercules)
 ;;; project-hercules.el ends here
