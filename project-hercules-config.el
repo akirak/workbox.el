@@ -2,19 +2,26 @@
 
 (require 'project-hercules)
 
-;; TODO: Add declare-function forms
+(declare-function project-compile "project")
+(declare-function magit-commit "ext:magit")
+(declare-function magit-log "ext:magit")
+(declare-function magit-stage-modified "ext:magit")
+(declare-function magit-status "ext:magit")
+(declare-function nix-flake-dispatch "ext:nix-flake")
 
 ;;;; Add entries to the parent map
 
 (let ((parent project-hercules-parent-map))
-  (define-key parent "c" #'project-compile)
+  (define-key parent "b" #'project-compile)
+  (define-key parent "c" #'magit-commit)
   (define-key parent "l" #'magit-log)
+  (define-key parent "m" #'magit-stage-modified)
   (define-key parent "s" #'magit-status))
 
-(dolist (fn '(project-compile
-              magit-log
-              magit-status))
-  (add-to-list 'project-hercules-hide-funs fn))
+(setq project-hercules-hide-funs
+      (append '(project-compile
+                magit-log)
+              (get 'project-hercules-hide-funs 'standard-value)))
 
 ;;;; Composition examples
 

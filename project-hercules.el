@@ -34,6 +34,12 @@
 (require 'hercules)
 (require 'project)
 
+(defgroup project-hercules nil
+  "A helper macro for per-project keymaps."
+  :prefix "project-hercules-"
+  :group 'project
+  :group 'hercules)
+
 (defcustom project-hercules-composed-maps nil
   "A set of rules for composing keymaps."
   :type '(repeat (list (choice filename
@@ -61,6 +67,17 @@
 The user should not set this variable.")
 
 ;;;; Primary API
+
+;; This needs to be defined in prior to `project-hercules-make-map'.
+(defun project-hercules--remove-plist (plist prop)
+  (cond
+   ((null plist) plist)
+   ((eq prop (car plist))
+    (project-hercules--remove-plist (cddr plist) prop))
+   (t
+    `(,(nth 0 plist)
+      ,(nth 1 plist)
+      ,@(project-hercules--remove-plist (cddr plist) prop)))))
 
 (cl-defmacro project-hercules-make-map (root &rest hercules-args
                                              &key init &allow-other-keys)
@@ -212,16 +229,6 @@ form."
 
 (defun project-hercules--normalize-root (root)
   (file-truename (file-name-as-directory root)))
-
-(defun project-hercules--remove-plist (plist prop)
-  (cond
-   ((null plist) plist)
-   ((eq prop (car plist))
-    (project-hercules--remove-plist (cddr plist) prop))
-   (t
-    `(,(nth 0 plist)
-      ,(nth 1 plist)
-      ,@(project-hercules--remove-plist (cddr plist) prop)))))
 
 (provide 'project-hercules)
 ;;; project-hercules.el ends here
