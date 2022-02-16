@@ -52,7 +52,7 @@
                        symbol)))
 
 (defcustom project-hercules-hide-funs
-  nil
+  '(project-hercules-exit)
   "List of functions added to :hide-funs by default."
   :type '(repeat symbol))
 
