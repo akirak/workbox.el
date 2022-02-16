@@ -9,11 +9,8 @@
                                function)
                        symbol)))
 
-(defcustom project-hercules-parent-map nil
-  "The default parent parent map of composed keymaps."
-  :type '(choice null keymap))
-
-(defcustom project-hercules-hide-funs nil
+(defcustom project-hercules-hide-funs
+  '(project-hercules-exit)
   "List of functions added to :hide-funs by default."
   :type '(repeat symbol))
 
@@ -21,7 +18,16 @@
   "Whether to define a project keymap when none is found."
   :type 'boolean)
 
-(defvar project-hercules-commands nil)
+(defvar project-hercules-parent-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "q" #'project-hercules-exit)
+    map)
+  "The default parent parent map of composed keymaps.")
+
+(defvar project-hercules-commands nil
+  "Hash table to store per-project transient commands.
+
+The user should not set this variable.")
 
 ;;;; Primary API
 
