@@ -92,7 +92,7 @@ defined in `project-hercules-composed-maps'. See
                            ;; The last argument is not copied, so mutations to
                            ;; the original variable would affect existing
                            ;; definitions.
-                           (bound-and-true-p project-hercules-hide-funs)))
+                           project-hercules-hide-funs))
         (hercules-args (thread-first hercules-args
                          (project-hercules--remove-plist :init)
                          (project-hercules--remove-plist :hide-funs))))
