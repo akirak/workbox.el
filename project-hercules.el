@@ -68,7 +68,7 @@ defined in `project-hercules-composed-maps'. See
            (puthash root command project-hercules-commands))
          (hercules-def
           :show-funs command
-          :hide-funs ,hide-funs
+          :hide-funs ',hide-funs
           :keymap map-symbol
           ,@hercules-args)
          (symbol-value map-symbol)))))
