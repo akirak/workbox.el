@@ -18,10 +18,9 @@
   (define-key parent "m" #'magit-stage-modified)
   (define-key parent "s" #'magit-status))
 
-(setq project-hercules-hide-funs
-      (append '(project-compile
-                magit-log)
-              (get 'project-hercules-hide-funs 'standard-value)))
+(dolist (symbol '(project-compile
+                  magit-log))
+  (add-to-list 'project-hercules-hide-funs symbol))
 
 ;;;; Composition examples
 
