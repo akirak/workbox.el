@@ -230,5 +230,8 @@ form."
 (defun project-hercules--normalize-root (root)
   (file-truename (file-name-as-directory root)))
 
+;; Only close the transient keymap.
+(fset 'project-hercules-exit #'ignore)
+
 (provide 'project-hercules)
 ;;; project-hercules.el ends here
