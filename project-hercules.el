@@ -27,7 +27,10 @@
 
 ;;; Commentary:
 
-;; 
+;; This is a library that provides a helper function fir defining per-project
+;; transient maps. You can define keymaps using `project-hercules-make-map'
+;; function and dispatch a keymap for the current project using
+;; `project-hercules-dispatch'.
 
 ;;; Code:
 
