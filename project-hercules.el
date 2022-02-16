@@ -33,6 +33,19 @@ The user should not set this variable.")
 
 (cl-defmacro project-hercules-make-map (root &rest hercules-args
                                              &key init &allow-other-keys)
+  "Define a hercules command for a project root.
+
+ROOT should be the root directory of a project.
+
+You can pass HERCULES-ARGS to `hercules-def' except for
+:show-funs and :keymaps. Also, `project-hercules-hide-funs' is
+added to :hide-funs.
+
+If INIT is an expression, its evaluation result will be the
+initial value of the keymap. Otherwise, a composed keymap is
+created from `project-hercules-parent-map' according to rules
+defined in `project-hercules-composed-maps'. See
+`make-composed-keymap' for how composition works."
   (let ((hide-funs (append (plist-get hercules-args :hide-funs)
                            ;; The last argument is not copied, so mutations to
                            ;; the original variable would affect existing
@@ -62,6 +75,15 @@ The user should not set this variable.")
 
 ;;;###autoload
 (defun project-hercules-dispatch ()
+  "Dispatch the keymap for the current project root.
+
+This command dispatches a transient keymap defined using
+`project-hercules-make-map'.
+
+If there is no keymap defined for the project but
+`project-hercules-dispatch-fallback' is non-nil, a fallback is
+created and used. The fallback is the same as the initial map
+created in `project-hercules-make-map'."
   (interactive)
   (if-let (root (project-root (project-current)))
       (if-let (command (project-hercules--find-by-root root))
@@ -95,7 +117,12 @@ The user should not set this variable.")
 ;;;; Administration commands
 
 (defun project-hercules-remove-project (root)
-  "Remove the definition for the project ROOT."
+  "Remove the definition for the project ROOT.
+
+Because `project-hercules-make-map' does not override an existing
+value for the project, you may sometimes need to run this
+function before you re-evaluate a `project-hercules-make-map'
+form."
   (interactive (list (or (project-root (project-current))
                          (user-error "No project found"))))
   (project-hercules--ensure)
@@ -103,7 +130,7 @@ The user should not set this variable.")
            project-hercules-commands))
 
 (defun project-hercules-display-keymap (root)
-  "Display the keymap for the current project."
+  "Display the keymap for the current project ROOT."
   (interactive (list (or (project-root (project-current))
                          (user-error "Not in a project"))))
   (pp-display-expression (or (project-hercules--get-map root)
