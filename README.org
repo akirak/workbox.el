@@ -11,10 +11,15 @@ Use =project-hercules-make-map= to define per-project keymaps.
 Example:
 
 #+begin_src emacs-lisp
-  (with-eval-after-load 'project-hercules
-    (let ((map (project-hercules-make-map "~/config/"
-                                          :hide-funs '(my-hercules-exit)
-                                          :transient t)))
-      ;; Add your keybindings...
-      (define-key map (kbd "q") #'my-hercules-exit)))
+  ;; Rather than using `with-eval-after-load', using `eval-after-load' and giving
+  ;; an explicit function name prevents duplicate addition of entries for the same
+  ;; project.
+
+  (eval-after-load 'project-hercules
+    (defun define-my-config-map ()
+      (let ((map (project-hercules-make-map "~/config/"
+                                            :transient t)))
+        ;; Add your keybindings...
+        (define-key map (kbd "c") #'my-nixos-rebuild-build)
+        (define-key map (kbd "R") #'my-nixos-rebuild-switch))))
 #+end_src
