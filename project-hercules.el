@@ -59,8 +59,9 @@ defined in `project-hercules-composed-maps'. See
        (let* ((root (project-hercules--normalize-root ,root))
               (command (gethash root project-hercules-commands))
               (map-symbol (when command
-                            (get command 'project-hercules-map))))
          (unless command
+                            (or (get command 'project-hercules-map)
+                                (error "Keymap for %s is not found" command)))))
            (setq command (make-symbol "project-hercules-command"))
            (setq map-symbol (make-symbol "project-hercules-map"))
            (set map-symbol ,(or init '(project-hercules--make-default-map root)))
