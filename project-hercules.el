@@ -132,7 +132,8 @@ If there is no keymap defined for the project but
 created and used. The fallback is the same as the initial map
 created in `project-hercules-make-map'."
   (interactive)
-  (if-let (root (project-root (project-current)))
+  (if-let* ((project (project-current))
+            (root (project-root project)))
       (if-let (command (project-hercules--find-by-root root))
           (funcall-interactively command)
         (if project-hercules-dispatch-fallback
