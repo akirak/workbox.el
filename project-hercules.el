@@ -59,9 +59,10 @@ defined in `project-hercules-composed-maps'. See
        (let* ((root (project-hercules--normalize-root ,root))
               (command (gethash root project-hercules-commands))
               (map-symbol (when command
-         (unless command
                             (or (get command 'project-hercules-map)
                                 (error "Keymap for %s is not found" command)))))
+         (if command
+             (project-hercules--make-default-map root (symbol-value map-symbol))
            (setq command (make-symbol "project-hercules-command"))
            (setq map-symbol (make-symbol "project-hercules-map"))
            (set map-symbol ,(or init '(project-hercules--make-default-map root)))
@@ -98,17 +99,25 @@ created in `project-hercules-make-map'."
 
 ;;;; The default keymaps
 
-(defun project-hercules--make-default-map (root)
-  "Create the default keymap for ROOT."
-  (let ((matches (seq-filter (lambda (rule)
-                               (project-hercules--test-rule (car rule)
-                                                            root))
-                             project-hercules-composed-maps)))
-    (make-composed-keymap
-     (seq-map (pcase-lambda (`(,_ ,map-symbol . ,_))
-                (symbol-value map-symbol))
-              matches)
-     project-hercules-parent-map)))
+(defun project-hercules--make-default-map (root &optional current)
+  "Create the default keymap for the current project root.
+
+ROOT is the root directory of a project.
+
+If CURRENT is given, it should be the current keymap of the
+project, and it will be updated."
+  (let* ((matches (seq-filter (lambda (rule)
+                                (project-hercules--test-rule (car rule)
+                                                             root))
+                              project-hercules-composed-maps))
+         (maps (seq-map (pcase-lambda (`(,_ ,map-symbol . ,_))
+                          (symbol-value map-symbol))
+                        matches)))
+    (if (and current (keymapp current))
+        (dolist (map maps)
+          (unless (member map (cdr current))
+            (setcdr current (cons map (copy-sequence (cdr current)))))))
+    (make-composed-keymap maps project-hercules-parent-map)))
 
 (defun project-hercules--test-rule (condition root)
   "Test the CONDITION of a rule against ROOT."
