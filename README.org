@@ -23,3 +23,6 @@ Use =project-hercules-make-map= to define per-project keymaps, e.g.
 #+end_src
 
 Then you can dispatch the keymap for the project using =project-hercules-dispatch=.
+
+If you don't define a map for the project, the default map is created according to =project-hercules-composed-maps=.
+You can delete the map for the current project by running =project-hercules-remove-project= command, which should be run after you update =project-hercules-composed-maps= variable.
