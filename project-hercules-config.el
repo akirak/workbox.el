@@ -10,12 +10,15 @@
 (declare-function magit-push "ext:magit")
 (declare-function nix-flake-dispatch "ext:nix-flake")
 
+(declare-function project-hercules-npm "project-hercules-npm")
+
 ;;;; Add entries to the parent map
 
 (let ((parent project-hercules-parent-map))
   (define-key parent "b" #'project-compile))
 
 (dolist (symbol '(project-compile
+                  project-hercules-npm
                   magit-log))
   (add-to-list 'project-hercules-hide-funs symbol))
 
@@ -24,6 +27,12 @@
 (defvar project-hercules-nix-flake-map
   (let ((map (make-sparse-keymap)))
     (define-key map "n" #'nix-flake-dispatch)
+    map))
+
+(defvar project-hercules-npm-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "x" #'project-hercules-npm)
+    (define-key map "rn" #'project-hercules-npm)
     map))
 
 (defvar project-hercules-magit-map
@@ -38,6 +47,8 @@
 (setq project-hercules-composed-maps
       '(("flake.nix"
          project-hercules-nix-flake-map)
+        ("package.json"
+         project-hercules-npm-map)
         (".git"
          project-hercules-magit-map)))
 

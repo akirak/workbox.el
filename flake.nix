@@ -31,5 +31,9 @@
       localPackages = [
         "project-hercules"
       ];
+      extraPackages = [
+        # project 0.8 is required for Emacs 27
+        "project"
+      ];
     };
 }

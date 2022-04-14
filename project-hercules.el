@@ -4,7 +4,7 @@
 
 ;; Author: Akira Komamura <akira.komamura@gmail.com>
 ;; Version: 0.1
-;; Package-Requires: ((emacs "26.1") (project "0.6") (hercules "0.3"))
+;; Package-Requires: ((emacs "27.1") (project "0.8") (hercules "0.3"))
 ;; Keywords: convenience
 ;; URL: https://github.com/akirak/project-hercules.el
 
