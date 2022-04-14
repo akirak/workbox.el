@@ -9,6 +9,10 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - package: project-hercules
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python 3.6
@@ -20,11 +24,15 @@ jobs:
         sudo apt-get install emacs && emacs --version
         git clone https://github.com/riscy/melpazoid.git ~/melpazoid
         pip install ~/melpazoid
+
+    - run: |
+        echo "RECIPE_FILE=$(nix eval \
+        .#emacs.packageInputs.${{ matrix.package }}.inventory.path --raw\
+        )/${{ matrix.package }}" >> $GITHUB_ENV
+
     - name: Run
       env:
         LOCAL_REPO: ${{ github.workspace }}
-        # RECIPE is your recipe as written for MELPA:
-        RECIPE: (shx :repo "riscy/shx-for-emacs" :fetcher github)
         # set this to false (or remove it) if the package isn't on MELPA:
         EXIST_OK: true
       run: echo $GITHUB_REF && make -C ~/melpazoid
