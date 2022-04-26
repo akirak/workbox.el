@@ -15,7 +15,7 @@
 ;;;; Add entries to the parent map
 
 (let ((parent project-hercules-parent-map))
-  (define-key parent "b" #'project-compile))
+  (define-key parent "x" #'project-compile))
 
 (dolist (symbol '(project-compile
                   project-hercules-npm
@@ -31,7 +31,7 @@
 
 (defvar project-hercules-npm-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "x" #'project-hercules-npm)
+    (define-key map "p" #'project-hercules-npm)
     (define-key map "rn" #'project-hercules-npm)
     map))
 
