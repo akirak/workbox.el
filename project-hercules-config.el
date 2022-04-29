@@ -19,6 +19,7 @@
 
 (dolist (symbol '(project-compile
                   project-hercules-npm
+                  project-hercules-mix
                   magit-log))
   (add-to-list 'project-hercules-hide-funs symbol))
 
@@ -33,6 +34,12 @@
   (let ((map (make-sparse-keymap)))
     (define-key map "p" #'project-hercules-npm)
     (define-key map "rn" #'project-hercules-npm)
+    map))
+
+(defvar project-hercules-mix-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "p" #'project-hercules-mix)
+    (define-key map "rm" #'project-hercules-mix)
     map))
 
 (defvar project-hercules-magit-map
@@ -50,7 +57,9 @@
         ("package.json"
          project-hercules-npm-map)
         (".git"
-         project-hercules-magit-map)))
+         project-hercules-magit-map)
+        ("mix.exs"
+         project-hercules-mix-map)))
 
 (provide 'project-hercules-config)
 ;;; project-hercules-config.el ends here
