@@ -7,6 +7,14 @@
   :prefix "project-hercules-npm-"
   :group 'project-hercules)
 
+(define-widget 'project-hercules-npm-subcommands-type 'lazy
+  "Built-in subcommand of a package manager."
+  :tag "Package manager"
+  :type '(repeat (cons (string :tag "Subcommand")
+                       (plist :options
+                              (((const :description)
+                                string))))))
+
 (defcustom project-hercules-npm-pm-alist
   '(("pnpm"
      :lock "pnpm-lock.yaml"
@@ -24,22 +32,30 @@
 
 (defcustom project-hercules-npm-pnpm-commands
   ;; TODO Add a complete set of builtin subcommands
-  '("install")
+  ;; See pnpm help
+  '(("install"
+     :description "Install all dependencies for a project")
+    ("add"
+     :description "Installs a package and any packages that it depends on")
+    ("import"
+     :description "Generates a pnpm-lock.yaml from an npm package-lock.json")
+    ("update"
+     :description "Updates packages to their latest version based on the specified range"))
   "List of pnpm subcommands that are not specific to a project."
-  :type '(repeat string))
+  :type 'project-hercules-npm-subcommands-type)
 
 (defcustom project-hercules-npm-yarn-commands
   ;; TODO Add a complete set of builtin subcommands
-  '("install")
+  '(("install"))
   "List of yarn subcommands that are not specific to a project."
-  :type '(repeat string))
+  :type 'project-hercules-npm-subcommands-type)
 
 (defcustom project-hercules-npm-npm-commands
   ;; TODO Add a complete set of builtin subcommands
-  '("install"
-    "lock")
+  '(("install")
+    ("lock"))
   "List of npm subcommands that are not specific to a project."
-  :type '(repeat string))
+  :type 'project-hercules-npm-subcommands-type)
 
 (defvar project-hercules-npm-history nil)
 
@@ -71,8 +87,10 @@
                                           'command body))
                            (map-elt data "scripts"))
                           (when builtins-var
-                            (mapcar `(lambda (subcommand)
-                                       (concat ,program " " subcommand))
+                            (mapcar `(lambda (entry)
+                                       (propertize (concat ,program " " (car entry))
+                                                   'description
+                                                   (plist-get (cdr entry) :description)))
                                     (symbol-value builtins-var))))))
     `(lambda (string pred action)
        (if (eq action 'metadata)
@@ -83,7 +101,9 @@
 (defun project-hercules-npm-annotate (candidate)
   (if-let (command (get-char-property 0 'command candidate))
       (concat " " command)
-    ""))
+    (if-let (description (get-char-property 0 'description candidate))
+        (concat " " description)
+      "")))
 
 ;;;###autoload
 (defun project-hercules-npm ()
