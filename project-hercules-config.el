@@ -11,6 +11,7 @@
 (declare-function nix-flake-dispatch "ext:nix-flake")
 
 (declare-function project-hercules-npm "project-hercules-npm")
+(declare-function project-hercules-mix "project-hercules-mix")
 
 ;;;; Add entries to the parent map
 

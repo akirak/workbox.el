@@ -2,6 +2,7 @@
 
 (defcustom project-hercules-process-use-direnv t
   "Whether to use the direnv integration."
+  :group 'project-hercules
   :type 'boolean)
 
 (defun project-hercules-process--direnv-allowed ()
