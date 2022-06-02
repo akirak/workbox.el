@@ -39,8 +39,16 @@
      :description "Installs a package and any packages that it depends on")
     ("import"
      :description "Generates a pnpm-lock.yaml from an npm package-lock.json")
+    ("remove"
+     :description "Removes packages from node_modules and from the project's package.json")
     ("update"
-     :description "Updates packages to their latest version based on the specified range"))
+     :description "Updates packages to their latest version based on the specified range")
+    ("audit"
+     :description "Checks for known security issues with the installed packages")
+    ("outdated"
+     :description "Check for outdated packages")
+    ("exec"
+     :description "Executes a shell command in scope of a project"))
   "List of pnpm subcommands that are not specific to a project."
   :type 'project-hercules-npm-subcommands-type)
 
