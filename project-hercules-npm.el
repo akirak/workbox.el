@@ -119,11 +119,9 @@
   (interactive)
   (let* ((default-directory (locate-dominating-file default-directory
                                                     "package.json"))
-         (command (completing-read (format "Command (%s): " default-directory)
-                                   (project-hercules-npm-completion
-                                    default-directory)
-                                   nil nil nil
-                                   project-hercules-npm-history)))
+         (command (project-hercules--complete 'project-hercules-npm
+                                              (project-hercules-npm-completion
+                                               default-directory))))
     (compile command)))
 
 (provide 'project-hercules-npm)
