@@ -18,12 +18,15 @@
 (defcustom project-hercules-npm-pm-alist
   '(("pnpm"
      :lock "pnpm-lock.yaml"
+     :install-command "install"
      :builtin-commands project-hercules-npm-pnpm-commands)
     ("yarn"
      :lock "yarn.lock"
+     :install-command ""
      :builtin-commands project-hercules-npm-yarn-commands)
     ("npm"
      :lock "package-lock.json"
+     :install-command "install"
      :script-command "run"
      :builtin-commands project-hercules-npm-yarn-commands))
   "Alist of package managers for package.json."
@@ -67,19 +70,9 @@
 
 (defvar project-hercules-npm-history nil)
 
-(defun project-hercules-npm-completion (&optional dir)
-  "Completion table for npm scripts."
-  (let* ((default-directory (or dir
-                                (locate-dominating-file default-directory
-                                                        "package.json")))
-         (program-ent (or (seq-some (pcase-lambda (entry)
-                                      (if-let (lock (plist-get (cdr entry) :lock))
-                                          (when (file-exists-p lock)
-                                            entry)
-                                        (error "Missing :lock attribute in %s" entry)))
-                                    project-hercules-npm-pm-alist)
-                          (error "No matching entry from project-hercules-npm-pm-alist")))
-         (program (car program-ent))
+(defun project-hercules-npm--completion (program-ent)
+  "Return a completion table for npm scripts."
+  (let* ((program (car program-ent))
          (plist (cdr program-ent))
          (script-prefix (if-let (subcommand (plist-get plist :script-command))
                             (concat program " " subcommand)
@@ -113,18 +106,35 @@
         (concat " " description)
       "")))
 
+(defun project-hercules-npm--install ()
+  (let ((pm (completing-read "No lock file is found. Choose a package manager: "
+                             (thread-last
+                               project-hercules-npm-pm-alist
+                               (mapcar #'car)
+                               (seq-filter #'executable-find)))))
+    (if-let (ent (assoc pm project-hercules-npm-pm-alist))
+        (compile (concat pm " " (or (plist-get (cdr ent) :install-command)
+                                    "")))
+      (user-error "Please add an entry for %s to project-hercules-npm-pm-alist" pm))))
+
 ;;;###autoload
 (defun project-hercules-npm ()
   "Run a npm command selected using `completing-read'."
   (interactive)
   (let* ((default-directory (locate-dominating-file default-directory
                                                     "package.json"))
-         (command (completing-read (format "Command (%s): " default-directory)
-                                   (project-hercules-npm-completion
-                                    default-directory)
-                                   nil nil nil
-                                   project-hercules-npm-history)))
-    (compile command)))
+         (program-ent (seq-some (pcase-lambda (entry)
+                                  (if-let (lock (plist-get (cdr entry) :lock))
+                                      (when (file-exists-p lock)
+                                        entry)
+                                    (error "Missing :lock attribute in %s" entry)))
+                                project-hercules-npm-pm-alist)))
+    (if program-ent
+        (compile (completing-read (format "Command (%s): " default-directory)
+                                  (project-hercules-npm--completion program-ent)
+                                  nil nil nil
+                                  project-hercules-npm-history))
+      (project-hercules-npm--install))))
 
 (provide 'project-hercules-npm)
 ;;; project-hercules-npm.el ends here
