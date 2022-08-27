@@ -60,7 +60,8 @@
               (push (cons (string-trim-right (match-string 1))
                           (string-trim (match-string 2)))
                     result))))
-        (setq result (nreverse (copy-sequence result)))
+        (setq result (cons '("iex -S mix" . "Run iex within the context of the application")
+                           (nreverse (copy-sequence result))))
         (puthash default-directory result project-hercules-mix-command-cache)
         result)))
 
