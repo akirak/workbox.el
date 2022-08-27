@@ -7,6 +7,10 @@
 
 (defvar project-hercules-mix-command-alist nil)
 
+(defcustom project-hercules-mix-command-runner #'compile
+  "Function that runs mix commands."
+  :type 'function)
+
 ;;;###autoload
 (defun project-hercules-mix ()
   "Run a Mix command."
@@ -16,7 +20,7 @@
          (command (completing-read (format "Mix command (%s): " default-directory)
                                    (project-hercules-mix-completion))))
     (project-hercules-mix--add-command (string-trim command))
-    (compile command)))
+    (funcall project-hercules-mix-command-runner command)))
 
 (defun project-hercules-mix-clear ()
   (interactive)
