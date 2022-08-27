@@ -64,7 +64,7 @@
   "Add a Mix command to the per-project cache."
   (let ((current (project-hercules-mix--commands)))
     (unless (assoc command current)
-      (push (list command nil) current)
+      (push (cons command nil) current)
       (puthash default-directory current project-hercules-mix-command-cache))))
 
 (provide 'project-hercules-mix)
