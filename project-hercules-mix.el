@@ -1,5 +1,6 @@
 ;;; project-hercules-mix.el --- Mix integration -*- lexical-binding: t -*-
 
+(require 'project-hercules)
 (require 'project-hercules-process)
 
 (defvar project-hercules-mix-command-cache nil
@@ -15,12 +16,12 @@
 (defun project-hercules-mix ()
   "Run a Mix command."
   (interactive)
-  (let* ((default-directory (locate-dominating-file default-directory
-                                                    "mix.exs"))
-         (command (completing-read (format "Mix command (%s): " default-directory)
-                                   (project-hercules-mix-completion))))
-    (project-hercules-mix--add-command (string-trim command))
-    (funcall project-hercules-mix-command-runner command)))
+  (project-hercules-with-directory (locate-dominating-file default-directory "mix.exs")
+    (let* ((default-directory project-hercules-package-root-directory)
+           (command (completing-read (format "Mix command (%s): " default-directory)
+                                     (project-hercules-mix-completion))))
+      (project-hercules-mix--add-command (string-trim command))
+      (funcall project-hercules-mix-command-runner command))))
 
 (defun project-hercules-mix-clear ()
   (interactive)

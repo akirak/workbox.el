@@ -69,6 +69,14 @@
     map)
   "The default parent parent map of composed keymaps.")
 
+(defvar project-hercules-default-directory nil
+  "Directory in which package commands are run.
+
+When commands are completed in `project-hercules-npm',
+`project-hercules-mix', etc., this variable is set to the root
+directory of the package. This can be useful for running the
+command in an alternative action through embark, for example.")
+
 (defvar project-hercules-commands nil
   "Hash table to store per-project transient commands.
 
@@ -241,6 +249,12 @@ form."
                :test #'equal)))
 
 (defalias 'project-hercules-exit #'ignore)
+
+(defmacro project-hercules-with-directory (dir &rest progn)
+  (declare (indent 1))
+  `(let ((default-directory ,dir))
+     (setq project-hercules-default-directory ,dir)
+     ,@progn))
 
 (provide 'project-hercules)
 ;;; project-hercules.el ends here

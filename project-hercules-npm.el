@@ -121,20 +121,20 @@
 (defun project-hercules-npm ()
   "Run a npm command selected using `completing-read'."
   (interactive)
-  (let* ((default-directory (locate-dominating-file default-directory
-                                                    "package.json"))
-         (program-ent (seq-some (pcase-lambda (entry)
-                                  (if-let (lock (plist-get (cdr entry) :lock))
-                                      (when (file-exists-p lock)
-                                        entry)
-                                    (error "Missing :lock attribute in %s" entry)))
-                                project-hercules-npm-pm-alist)))
-    (if program-ent
-        (compile (completing-read (format "Command (%s): " default-directory)
-                                  (project-hercules-npm--completion program-ent)
-                                  nil nil nil
-                                  project-hercules-npm-history))
-      (project-hercules-npm--install))))
+  (project-hercules-with-directory (locate-dominating-file default-directory
+                                                           "package.json")
+    (let ((program-ent (seq-some (pcase-lambda (entry)
+                                   (if-let (lock (plist-get (cdr entry) :lock))
+                                       (when (file-exists-p lock)
+                                         entry)
+                                     (error "Missing :lock attribute in %s" entry)))
+                                 project-hercules-npm-pm-alist)))
+      (if program-ent
+          (compile (completing-read (format "Command (%s): " default-directory)
+                                    (project-hercules-npm--completion program-ent)
+                                    nil nil nil
+                                    project-hercules-npm-history))
+        (project-hercules-npm--install)))))
 
 (provide 'project-hercules-npm)
 ;;; project-hercules-npm.el ends here
