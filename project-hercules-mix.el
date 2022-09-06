@@ -3,6 +3,10 @@
 (require 'project-hercules)
 (require 'project-hercules-process)
 
+(defgroup project-hercules-mix nil
+  "Elixir Mix support."
+  :type 'project-hercules)
+
 (defvar project-hercules-mix-command-cache nil
   "Hash table that stores per-project alists of commands.")
 
