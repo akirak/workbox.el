@@ -252,8 +252,8 @@ form."
 
 (defmacro project-hercules-with-directory (dir &rest progn)
   (declare (indent 1))
-  `(let ((default-directory ,dir))
-     (setq project-hercules-default-directory ,dir)
+  `(let ((default-directory (eval ,dir)))
+     (setq project-hercules-default-directory default-directory)
      ,@progn))
 
 (provide 'project-hercules)
