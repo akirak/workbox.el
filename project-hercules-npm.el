@@ -107,7 +107,8 @@
       "")))
 
 (defun project-hercules-npm--install ()
-  (let ((pm (completing-read "No lock file is found. Choose a package manager: "
+  (let ((pm (completing-read (format "No lock file is found in %s. Choose a package manager: "
+                                     (abbreviate-file-name default-directory))
                              (thread-last
                                project-hercules-npm-pm-alist
                                (mapcar #'car)
