@@ -250,10 +250,12 @@ form."
 
 (defalias 'project-hercules-exit #'ignore)
 
-(defmacro project-hercules-with-directory (dir &rest progn)
+(defmacro project-hercules-with-package-root (filename &rest progn)
   (declare (indent 1))
-  `(let ((default-directory (eval ,dir)))
-     (setq project-hercules-default-directory default-directory)
+  `(let* ((root (or (locate-dominating-file default-directory ,filename)
+                    (error "File %s is not found" ,filename)))
+          (default-directory root))
+     (setq project-hercules-default-directory root)
      ,@progn))
 
 (provide 'project-hercules)

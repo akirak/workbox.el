@@ -20,7 +20,7 @@
 (defun project-hercules-mix ()
   "Run a Mix command."
   (interactive)
-  (project-hercules-with-directory (locate-dominating-file default-directory "mix.exs")
+  (project-hercules-with-package-root "mix.exs"
     (let* ((default-directory project-hercules-package-root-directory)
            (command (completing-read (format "Mix command (%s): " default-directory)
                                      (project-hercules-mix-completion))))

@@ -121,8 +121,7 @@
 (defun project-hercules-npm ()
   "Run a npm command selected using `completing-read'."
   (interactive)
-  (project-hercules-with-directory (locate-dominating-file default-directory
-                                                           "package.json")
+  (project-hercules-with-package-root "package.json"
     (let ((program-ent (seq-some (pcase-lambda (entry)
                                    (if-let (lock (plist-get (cdr entry) :lock))
                                        (when (file-exists-p lock)
