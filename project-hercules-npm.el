@@ -1,6 +1,7 @@
 ;;; project-hercules-npm.el --- Support for npm scripts -*- lexical-binding: t -*-
 
 (require 'map)
+(require 'project-hercules)
 
 (defgroup project-hercules-npm nil
   "Run a npm command."
