@@ -32,9 +32,12 @@
             (abbreviate-file-name workbox-default-directory))))
 
 (transient-define-suffix workbox-transient-recompile ()
-  :description (lambda () (format "Recompile (%s in %s)"
-                                  compile-command
-                                  (abbreviate-file-name compilation-directory)))
+  :description (lambda ()
+                 (format "Recompile (%s%s)"
+                         compile-command
+                         (if (bound-and-true-p compilation-directory)
+                             (format " in %s" (abbreviate-file-name compilation-directory))
+                           "")))
   :if (lambda () compile-command)
   (interactive)
   (recompile))
