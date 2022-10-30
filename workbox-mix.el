@@ -5,7 +5,7 @@
 
 (defgroup workbox-mix nil
   "Elixir Mix support."
-  :type 'workbox)
+  :group 'workbox)
 
 (defvar workbox-mix-command-cache nil
   "Hash table that stores per-project alists of commands.")
@@ -21,7 +21,7 @@
   "Run a Mix command."
   (interactive)
   (workbox-with-package-root "mix.exs"
-    (let* ((default-directory workbox-package-root-directory)
+    (let* ((default-directory workbox-default-directory)
            (command (completing-read (format "Mix command (%s): " default-directory)
                                      (workbox-mix-completion))))
       (workbox-mix--add-command (string-trim command))

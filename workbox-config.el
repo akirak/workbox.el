@@ -1,6 +1,7 @@
 ;;; workbox-config.el --- An example configuration -*- lexical-binding: t -*-
 
 (require 'workbox)
+(require 'cl-lib)
 
 (declare-function project-compile "project")
 (declare-function magit-commit "ext:magit")

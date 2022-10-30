@@ -36,6 +36,7 @@
 
 (require 'hercules)
 (require 'project)
+(require 'cl-lib)
 (require 'subr-x)
 
 (declare-function pp-display-expression "pp")
