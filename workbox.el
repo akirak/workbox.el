@@ -1,4 +1,4 @@
-;;; project-hercules.el --- Per-project transient keymaps -*- lexical-binding: t -*-
+;;; workbox.el --- Per-project transient keymaps -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2022 Akira Komamura
 
@@ -6,7 +6,7 @@
 ;; Version: 0.1
 ;; Package-Requires: ((emacs "28.1") (hercules "0.3"))
 ;; Keywords: convenience
-;; URL: https://github.com/akirak/project-hercules.el
+;; URL: https://github.com/akirak/workbox.el
 
 ;; This file is not part of GNU Emacs.
 
@@ -28,9 +28,9 @@
 ;;; Commentary:
 
 ;; This is a library that provides a helper function fir defining per-project
-;; transient maps. You can define keymaps using `project-hercules-make-map'
+;; transient maps. You can define keymaps using `workbox-make-map'
 ;; function and dispatch a keymap for the current project using
-;; `project-hercules-dispatch'.
+;; `workbox-dispatch'.
 
 ;;; Code:
 
@@ -40,87 +40,87 @@
 
 (declare-function pp-display-expression "pp")
 
-(defgroup project-hercules nil
+(defgroup workbox nil
   "A helper macro for per-project keymaps."
-  :prefix "project-hercules-"
+  :prefix "workbox-"
   :group 'project
   :group 'hercules)
 
-(require 'project-hercules-utils)
+(require 'workbox-utils)
 
-(defcustom project-hercules-composed-maps nil
+(defcustom workbox-composed-maps nil
   "A set of rules for composing keymaps."
   :type '(repeat (list (choice filename
                                function)
                        symbol)))
 
-(defcustom project-hercules-hide-funs
-  '(project-hercules-exit)
+(defcustom workbox-hide-funs
+  '(workbox-exit)
   "List of functions added to :hide-funs by default."
   :type '(repeat symbol))
 
-(defcustom project-hercules-dispatch-fallback t
+(defcustom workbox-dispatch-fallback t
   "Whether to define a project keymap when none is found."
   :type 'boolean)
 
-(defvar project-hercules-parent-map
+(defvar workbox-parent-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "q" #'project-hercules-exit)
+    (define-key map "q" #'workbox-exit)
     map)
   "The default parent parent map of composed keymaps.")
 
-(defvar project-hercules-default-directory nil
+(defvar workbox-default-directory nil
   "Directory in which package commands are run.
 
-When commands are completed in `project-hercules-npm',
-`project-hercules-mix', etc., this variable is set to the root
+When commands are completed in `workbox-npm',
+`workbox-mix', etc., this variable is set to the root
 directory of the package. This can be useful for running the
 command in an alternative action through embark, for example.")
 
-(defvar project-hercules-commands nil
+(defvar workbox-commands nil
   "Hash table to store per-project transient commands.
 
 The user should not set this variable.")
 
 ;;;; Primary API
 
-(cl-defun project-hercules-make-map (root &rest hercules-args
+(cl-defun workbox-make-map (root &rest hercules-args
                                           &key init &allow-other-keys)
   "Define a hercules command for a project root.
 
 ROOT should be the root directory of a project.
 
 You can pass HERCULES-ARGS to `hercules-def' except for
-:show-funs and :keymaps. Also, `project-hercules-hide-funs' is
+:show-funs and :keymaps. Also, `workbox-hide-funs' is
 added to :hide-funs.
 
 If INIT is a quoted expression, its evaluation result will be the
 initial value of the keymap. Otherwise, a composed keymap is
-created from `project-hercules-parent-map' according to rules
-defined in `project-hercules-composed-maps'. See
+created from `workbox-parent-map' according to rules
+defined in `workbox-composed-maps'. See
 `make-composed-keymap' for how composition works."
   (let ((hide-funs (append (plist-get hercules-args :hide-funs)
                            ;; The last argument is not copied, so mutations to
                            ;; the original variable would affect existing
                            ;; definitions.
-                           project-hercules-hide-funs))
+                           workbox-hide-funs))
         (hercules-args (thread-first hercules-args
-                         (project-hercules--remove-plist :init)
-                         (project-hercules--remove-plist :hide-funs))))
-    (project-hercules--ensure)
-    (let* ((root (project-hercules--normalize-root root))
-           (command (gethash root project-hercules-commands))
+                         (workbox--remove-plist :init)
+                         (workbox--remove-plist :hide-funs))))
+    (workbox--ensure)
+    (let* ((root (workbox--normalize-root root))
+           (command (gethash root workbox-commands))
            (map-symbol (when command
-                         (or (get command 'project-hercules-map)
+                         (or (get command 'workbox-map)
                              (error "Keymap for %s is not found" command)))))
       (if command
-          (project-hercules--make-default-map root (symbol-value map-symbol))
-        (setq command (make-symbol "project-hercules-command"))
-        (setq map-symbol (make-symbol "project-hercules-map"))
+          (workbox--make-default-map root (symbol-value map-symbol))
+        (setq command (make-symbol "workbox-command"))
+        (setq map-symbol (make-symbol "workbox-map"))
         (set map-symbol (or (eval init)
-                            (project-hercules--make-default-map root)))
-        (put command 'project-hercules-map map-symbol)
-        (puthash root command project-hercules-commands))
+                            (workbox--make-default-map root)))
+        (put command 'workbox-map map-symbol)
+        (puthash root command workbox-commands))
       (apply #'hercules-def
              :show-funs command
              :hide-funs hide-funs
@@ -129,31 +129,31 @@ defined in `project-hercules-composed-maps'. See
       (symbol-value map-symbol))))
 
 ;;;###autoload
-(defun project-hercules-dispatch ()
+(defun workbox-dispatch ()
   "Dispatch the keymap for the current project root.
 
 This command dispatches a transient keymap defined using
-`project-hercules-make-map'.
+`workbox-make-map'.
 
 If there is no keymap defined for the project but
-`project-hercules-dispatch-fallback' is non-nil, a fallback is
+`workbox-dispatch-fallback' is non-nil, a fallback is
 created and used. The fallback is the same as the initial map
-created in `project-hercules-make-map'."
+created in `workbox-make-map'."
   (interactive)
   (if-let* ((project (project-current))
             (root (project-root project)))
-      (if-let (command (project-hercules--find-by-root root))
+      (if-let (command (workbox--find-by-root root))
           (funcall-interactively command)
-        (if project-hercules-dispatch-fallback
+        (if workbox-dispatch-fallback
             (progn
-              (project-hercules-make-map root)
-              (project-hercules-dispatch))
+              (workbox-make-map root)
+              (workbox-dispatch))
           (user-error "Not found for project %s" root)))
     (user-error "No project found")))
 
 ;;;; The default keymaps
 
-(defun project-hercules--make-default-map (root &optional current)
+(defun workbox--make-default-map (root &optional current)
   "Create the default keymap for the current project root.
 
 ROOT is the root directory of a project.
@@ -161,9 +161,9 @@ ROOT is the root directory of a project.
 If CURRENT is given, it should be the current keymap of the
 project, and it will be updated."
   (let* ((matches (seq-filter (lambda (rule)
-                                (project-hercules--test-rule (car rule)
+                                (workbox--test-rule (car rule)
                                                              root))
-                              project-hercules-composed-maps))
+                              workbox-composed-maps))
          (maps (seq-map (pcase-lambda (`(,_ ,map-symbol . ,_))
                           (symbol-value map-symbol))
                         matches)))
@@ -171,70 +171,70 @@ project, and it will be updated."
         (dolist (map maps)
           (unless (member map (cdr current))
             (setcdr current (cons map (copy-sequence (cdr current)))))))
-    (make-composed-keymap maps project-hercules-parent-map)))
+    (make-composed-keymap maps workbox-parent-map)))
 
-(defun project-hercules--test-rule (condition root)
+(defun workbox--test-rule (condition root)
   "Test the CONDITION of a rule against ROOT."
   (cl-etypecase condition
     (string (file-exists-p (expand-file-name condition root)))))
 
 ;;;; Administration commands
 
-(defun project-hercules-remove-project (root)
+(defun workbox-remove-project (root)
   "Remove the definition for the project ROOT.
 
-Because `project-hercules-make-map' does not override an existing
+Because `workbox-make-map' does not override an existing
 value for the project, you may sometimes need to run this
-function before you re-evaluate a `project-hercules-make-map'
+function before you re-evaluate a `workbox-make-map'
 form."
   (interactive (list (or (project-root (project-current))
                          (user-error "No project found"))))
-  (project-hercules--ensure)
-  (remhash (project-hercules--normalize-root root)
-           project-hercules-commands))
+  (workbox--ensure)
+  (remhash (workbox--normalize-root root)
+           workbox-commands))
 
-(defun project-hercules-display-keymap (root)
+(defun workbox-display-keymap (root)
   "Display the keymap for the current project ROOT."
   (interactive (list (or (project-root (project-current))
                          (user-error "Not in a project"))))
   (require 'pp)
-  (pp-display-expression (or (project-hercules--get-map root)
+  (pp-display-expression (or (workbox--get-map root)
                              (user-error "No definition for root %s"
                                          root))
                          "*Hercules Keymap*"))
 
-(defun project-hercules--get-map (root)
+(defun workbox--get-map (root)
   "Return a list of keymaps for ROOT, if any."
-  (when-let* ((command (project-hercules--find-by-root root))
-              (symbol (get command 'project-hercules-map)))
+  (when-let* ((command (workbox--find-by-root root))
+              (symbol (get command 'workbox-map)))
     (accessible-keymaps (symbol-value symbol))))
 
 ;;;; Utilities
 
 ;;;;; Hashtable operations
 
-(defun project-hercules--ensure ()
-  (unless project-hercules-commands
-    (setq project-hercules-commands
+(defun workbox--ensure ()
+  (unless workbox-commands
+    (setq workbox-commands
           (make-hash-table :test #'equal))))
 
-(defun project-hercules--find-by-root (root)
-  (project-hercules--ensure)
-  (or (gethash (project-hercules--normalize-root root)
-               project-hercules-commands)
-      (when-let (worktrees (project-hercules--git-worktrees root))
+(defun workbox--find-by-root (root)
+  (workbox--ensure)
+  (or (gethash (workbox--normalize-root root)
+               workbox-commands)
+      (when-let (worktrees (workbox--git-worktrees root))
         (catch 'found
           (dolist (worktree worktrees)
-            (when-let (command (gethash (project-hercules--normalize-root worktree)
-                                        project-hercules-commands))
+            (when-let (command (gethash (workbox--normalize-root worktree)
+                                        workbox-commands))
               (throw 'found command)))))))
 
 ;;;;; Miscellaneous
 
-(defun project-hercules--normalize-root (root)
+(defun workbox--normalize-root (root)
   (file-truename (file-name-as-directory root)))
 
-(defun project-hercules--git-worktrees (root)
+(defun workbox--git-worktrees (root)
   "Return git worktrees for ROOT."
   (let ((default-directory root))
     (cl-remove (expand-file-name (string-remove-suffix "/" root))
@@ -248,15 +248,15 @@ form."
                  (delq nil))
                :test #'equal)))
 
-(defalias 'project-hercules-exit #'ignore)
+(defalias 'workbox-exit #'ignore)
 
-(defmacro project-hercules-with-package-root (filename &rest progn)
+(defmacro workbox-with-package-root (filename &rest progn)
   (declare (indent 1))
   `(let* ((root (or (locate-dominating-file default-directory ,filename)
                     (error "File %s is not found" ,filename)))
           (default-directory root))
-     (setq project-hercules-default-directory root)
+     (setq workbox-default-directory root)
      ,@progn))
 
-(provide 'project-hercules)
-;;; project-hercules.el ends here
+(provide 'workbox)
+;;; workbox.el ends here

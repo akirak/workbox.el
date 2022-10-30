@@ -1,6 +1,6 @@
-;;; project-hercules-config.el --- An example configuration -*- lexical-binding: t -*-
+;;; workbox-config.el --- An example configuration -*- lexical-binding: t -*-
 
-(require 'project-hercules)
+(require 'workbox)
 
 (declare-function project-compile "project")
 (declare-function magit-commit "ext:magit")
@@ -10,40 +10,40 @@
 (declare-function magit-push "ext:magit")
 (declare-function nix-flake-dispatch "ext:nix-flake")
 
-(declare-function project-hercules-npm "project-hercules-npm")
-(declare-function project-hercules-mix "project-hercules-mix")
+(declare-function workbox-npm "workbox-npm")
+(declare-function workbox-mix "workbox-mix")
 
 ;;;; Add entries to the parent map
 
-(let ((parent project-hercules-parent-map))
+(let ((parent workbox-parent-map))
   (define-key parent "x" #'project-compile))
 
 (dolist (symbol '(project-compile
-                  project-hercules-npm
-                  project-hercules-mix
+                  workbox-npm
+                  workbox-mix
                   magit-log))
-  (add-to-list 'project-hercules-hide-funs symbol))
+  (add-to-list 'workbox-hide-funs symbol))
 
 ;;;; Composition examples
 
-(defvar project-hercules-nix-flake-map
+(defvar workbox-nix-flake-map
   (let ((map (make-sparse-keymap)))
     (define-key map "n" #'nix-flake-dispatch)
     map))
 
-(defvar project-hercules-npm-map
+(defvar workbox-npm-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "p" #'project-hercules-npm)
-    (define-key map "rn" #'project-hercules-npm)
+    (define-key map "p" #'workbox-npm)
+    (define-key map "rn" #'workbox-npm)
     map))
 
-(defvar project-hercules-mix-map
+(defvar workbox-mix-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "p" #'project-hercules-mix)
-    (define-key map "rm" #'project-hercules-mix)
+    (define-key map "p" #'workbox-mix)
+    (define-key map "rm" #'workbox-mix)
     map))
 
-(defvar project-hercules-magit-map
+(defvar workbox-magit-map
   (let ((map (make-sparse-keymap)))
     (define-key map "c" #'magit-commit)
     (define-key map "l" #'magit-log)
@@ -52,15 +52,15 @@
     (define-key map "P" #'magit-push)
     map))
 
-(setq project-hercules-composed-maps
+(setq workbox-composed-maps
       '(("flake.nix"
-         project-hercules-nix-flake-map)
+         workbox-nix-flake-map)
         ("package.json"
-         project-hercules-npm-map)
+         workbox-npm-map)
         (".git"
-         project-hercules-magit-map)
+         workbox-magit-map)
         ("mix.exs"
-         project-hercules-mix-map)))
+         workbox-mix-map)))
 
-(provide 'project-hercules-config)
-;;; project-hercules-config.el ends here
+(provide 'workbox-config)
+;;; workbox-config.el ends here

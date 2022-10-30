@@ -1,11 +1,11 @@
-;;; project-hercules-process.el ---  -*- lexical-binding: t -*-
+;;; workbox-process.el ---  -*- lexical-binding: t -*-
 
-(defcustom project-hercules-process-use-direnv t
+(defcustom workbox-process-use-direnv t
   "Whether to use the direnv integration."
-  :group 'project-hercules
+  :group 'workbox
   :type 'boolean)
 
-(defun project-hercules-process--direnv-allowed ()
+(defun workbox-process--direnv-allowed ()
   (with-temp-buffer
     (call-process "direnv" nil (list t nil) nil
                   "status")
@@ -14,15 +14,15 @@
       (when (re-search-forward "^Found RC allowed true" nil t)
         t))))
 
-(defun project-hercules-process-insert-stdout (command &rest args)
+(defun workbox-process-insert-stdout (command &rest args)
   "Insert the standard output from a command into the buffer."
   (let ((err-file (make-temp-file command)))
     (unwind-protect
-        (unless (zerop (if (and project-hercules-process-use-direnv
+        (unless (zerop (if (and workbox-process-use-direnv
                                 (executable-find "direnv")
                                 (or (file-exists-p ".envrc")
                                     (file-exists-p ".env")))
-                           (if (project-hercules-process--direnv-allowed)
+                           (if (workbox-process--direnv-allowed)
                                (apply #'call-process "direnv"
                                       nil (list t err-file) nil
                                       "exec" "."
@@ -39,5 +39,5 @@
                    (buffer-string))))
       (delete-file err-file))))
 
-(provide 'project-hercules-process)
-;;; project-hercules-process.el ends here
+(provide 'workbox-process)
+;;; workbox-process.el ends here

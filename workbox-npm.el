@@ -1,14 +1,14 @@
-;;; project-hercules-npm.el --- Support for npm scripts -*- lexical-binding: t -*-
+;;; workbox-npm.el --- Support for npm scripts -*- lexical-binding: t -*-
 
 (require 'map)
-(require 'project-hercules)
+(require 'workbox)
 
-(defgroup project-hercules-npm nil
+(defgroup workbox-npm nil
   "Run a npm command."
-  :prefix "project-hercules-npm-"
-  :group 'project-hercules)
+  :prefix "workbox-npm-"
+  :group 'workbox)
 
-(define-widget 'project-hercules-npm-subcommands-type 'lazy
+(define-widget 'workbox-npm-subcommands-type 'lazy
   "Built-in subcommand of a package manager."
   :tag "Package manager"
   :type '(repeat (cons (string :tag "Subcommand")
@@ -16,25 +16,25 @@
                               (((const :description)
                                 string))))))
 
-(defcustom project-hercules-npm-pm-alist
+(defcustom workbox-npm-pm-alist
   '(("pnpm"
      :lock "pnpm-lock.yaml"
      :install-command "install"
-     :builtin-commands project-hercules-npm-pnpm-commands)
+     :builtin-commands workbox-npm-pnpm-commands)
     ("yarn"
      :lock "yarn.lock"
      :install-command ""
-     :builtin-commands project-hercules-npm-yarn-commands)
+     :builtin-commands workbox-npm-yarn-commands)
     ("npm"
      :lock "package-lock.json"
      :install-command "install"
      :script-command "run"
-     :builtin-commands project-hercules-npm-yarn-commands))
+     :builtin-commands workbox-npm-yarn-commands))
   "Alist of package managers for package.json."
   :type '(alist :key-type string
                 :value-type plist))
 
-(defcustom project-hercules-npm-pnpm-commands
+(defcustom workbox-npm-pnpm-commands
   ;; TODO Add a complete set of builtin subcommands
   ;; See pnpm help
   '(("install"
@@ -54,24 +54,24 @@
     ("exec"
      :description "Executes a shell command in scope of a project"))
   "List of pnpm subcommands that are not specific to a project."
-  :type 'project-hercules-npm-subcommands-type)
+  :type 'workbox-npm-subcommands-type)
 
-(defcustom project-hercules-npm-yarn-commands
+(defcustom workbox-npm-yarn-commands
   ;; TODO Add a complete set of builtin subcommands
   '(("install"))
   "List of yarn subcommands that are not specific to a project."
-  :type 'project-hercules-npm-subcommands-type)
+  :type 'workbox-npm-subcommands-type)
 
-(defcustom project-hercules-npm-npm-commands
+(defcustom workbox-npm-npm-commands
   ;; TODO Add a complete set of builtin subcommands
   '(("install")
     ("lock"))
   "List of npm subcommands that are not specific to a project."
-  :type 'project-hercules-npm-subcommands-type)
+  :type 'workbox-npm-subcommands-type)
 
-(defvar project-hercules-npm-history nil)
+(defvar workbox-npm-history nil)
 
-(defun project-hercules-npm--completion (program-ent)
+(defun workbox-npm--completion (program-ent)
   "Return a completion table for npm scripts."
   (let* ((program (car program-ent))
          (plist (cdr program-ent))
@@ -96,50 +96,50 @@
                                     (symbol-value builtins-var))))))
     `(lambda (string pred action)
        (if (eq action 'metadata)
-           '(metadata . ((category . project-hercules-shell-command)
-                         (annotation-function . project-hercules-npm-annotate)))
+           '(metadata . ((category . workbox-shell-command)
+                         (annotation-function . workbox-npm-annotate)))
          (complete-with-action action ',scripts string pred)))))
 
-(defun project-hercules-npm-annotate (candidate)
+(defun workbox-npm-annotate (candidate)
   (if-let (command (get-char-property 0 'command candidate))
       (concat " " command)
     (if-let (description (get-char-property 0 'description candidate))
         (concat " " description)
       "")))
 
-(defun project-hercules-npm--install ()
+(defun workbox-npm--install ()
   (let ((pm (completing-read (format "No lock file is found in %s. Choose a package manager: "
                                      (abbreviate-file-name default-directory))
                              (thread-last
-                               project-hercules-npm-pm-alist
+                               workbox-npm-pm-alist
                                (mapcar #'car)
                                (seq-filter #'executable-find)))))
-    (if-let (ent (assoc pm project-hercules-npm-pm-alist))
+    (if-let (ent (assoc pm workbox-npm-pm-alist))
         (compile (concat pm " " (or (plist-get (cdr ent) :install-command)
                                     "")))
-      (user-error "Please add an entry for %s to project-hercules-npm-pm-alist" pm))))
+      (user-error "Please add an entry for %s to workbox-npm-pm-alist" pm))))
 
 ;;;###autoload
-(defun project-hercules-npm ()
+(defun workbox-npm ()
   "Run a npm command selected using `completing-read'."
   (interactive)
-  (project-hercules-with-package-root "package.json"
+  (workbox-with-package-root "package.json"
     (let ((program-ent (seq-some (pcase-lambda (entry)
                                    (if-let (lock (plist-get (cdr entry) :lock))
                                        (when (file-exists-p lock)
                                          entry)
                                      (error "Missing :lock attribute in %s" entry)))
-                                 project-hercules-npm-pm-alist)))
+                                 workbox-npm-pm-alist)))
       (if program-ent
           (progn
             (unless (executable-find (car program-ent))
               (user-error "Executable %s is not found in PATH"
                           (car program-ent)))
             (compile (completing-read (format "Command (%s): " default-directory)
-                                      (project-hercules-npm--completion program-ent)
+                                      (workbox-npm--completion program-ent)
                                       nil nil nil
-                                      project-hercules-npm-history)))
-        (project-hercules-npm--install)))))
+                                      workbox-npm-history)))
+        (workbox-npm--install)))))
 
-(provide 'project-hercules-npm)
-;;; project-hercules-npm.el ends here
+(provide 'workbox-npm)
+;;; workbox-npm.el ends here

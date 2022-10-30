@@ -1,6 +1,6 @@
-;;; project-hercules-utils.el ---  -*- lexical-binding: t -*-
+;;; workbox-utils.el ---  -*- lexical-binding: t -*-
 
-(defun project-hercules--remove-plist (plist prop)
+(defun workbox--remove-plist (plist prop)
   (let (result
         key
         (src (copy-sequence plist)))
@@ -11,5 +11,5 @@
         (push (pop src) result)))
     (nreverse result)))
 
-(provide 'project-hercules-utils)
-;;; project-hercules-utils.el ends here
+(provide 'workbox-utils)
+;;; workbox-utils.el ends here
