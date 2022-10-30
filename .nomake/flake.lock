@@ -1,0 +1,61 @@
+{
+  "nodes": {
+    "hercules": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1587368874,
+        "narHash": "sha256-TLdEd9J3HADBuls12fP2e2XYkGGbnMzbAVUiOWE+4+Y=",
+        "owner": "cyruseuros",
+        "repo": "hercules",
+        "rev": "557da39878d0637395fdded91243b340c37eff7b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cyruseuros",
+        "repo": "hercules",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "hercules": "hercules",
+        "which-key": "which-key",
+        "workbox": "workbox"
+      }
+    },
+    "which-key": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1660234571,
+        "narHash": "sha256-roLFem8a9xi3TQQF5+p8/ehW5zJWsNCkygT3N5s8TOg=",
+        "owner": "justbur",
+        "repo": "emacs-which-key",
+        "rev": "8093644032854b1cdf3245ce4e3c7b6673f741bf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "justbur",
+        "repo": "emacs-which-key",
+        "type": "github"
+      }
+    },
+    "workbox": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1662965575,
+        "narHash": "sha256-2ggd5K7VcvP/lCm9uciMw1JHPXWR/DmMCfFlijM6HFE=",
+        "owner": "akirak",
+        "repo": "workbox.el",
+        "rev": "eefc000f7666883355c5750f99d4e1001dbf88a3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "akirak",
+        "repo": "workbox.el",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
