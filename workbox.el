@@ -55,7 +55,7 @@
   :type '(alist :key-type file
                 :value-type plist))
 
-(defcustom workbox-readme-function #'find-file-read-only-other-window
+(defcustom workbox-find-file-function #'find-file-read-only-other-window
   "Function used to open a readme file."
   :type 'function)
 
@@ -183,10 +183,11 @@ command in an alternative action through embark, for example.")
   "Browse a readme file in the project."
   (interactive)
   (if-let (files (workbox--locate-files-regexp (rx bol "README" (or "." eol))))
-      (funcall workbox-readme-function
-               (if (eq 1 (length files))
-                   (car files)
-                 (workbox--select-project-file "Readme: " files)))
+      (let ((default-directory (project-root (project-current))))
+        (funcall workbox-find-file-function
+                 (if (eq 1 (length files))
+                     (car files)
+                   (workbox--select-project-file "Readme: " files))))
     (user-error "No readme is found")))
 
 ;;;###autoload
@@ -199,8 +200,10 @@ command in an alternative action through embark, for example.")
                     (project-files pr (list dir))
                   (seq-filter (lambda (file)
                                 (string-match-p workbox-doc-file-regexp file))
-                              (project-files pr)))))
-    (find-file-other-window (workbox--select-project-file "Documentation: " files))))
+                              (project-files pr))))
+         (default-directory (project-root pr)))
+    (funcall workbox-find-file-function
+             (workbox--select-project-file "Documentation: " files))))
 
 (defun workbox--doc-dir (pr)
   (let ((root (project-root pr)))
