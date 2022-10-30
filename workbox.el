@@ -55,7 +55,7 @@
   :type '(alist :key-type file
                 :value-type plist))
 
-(defcustom workbox-find-file-function #'find-file-read-only-other-window
+(defcustom workbox-find-file-function #'find-file
   "Function used to open a readme file."
   :type 'function)
 
