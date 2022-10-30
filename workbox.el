@@ -59,6 +59,16 @@
   "Function used to open a readme file."
   :type 'function)
 
+(defcustom workbox-doc-dir-regexp
+  (rx bol (or "doc" "docs" "documentation") eol)
+  "Regexp matching the name of a documentation directory."
+  :type 'regexp)
+
+(defcustom workbox-doc-file-regexp
+  (rx (or ".md") eol)
+  "Regexp matching file names of documentation files."
+  :type 'regexp)
+
 (defvar workbox-default-directory nil
   "Directory in which package commands are run.
 
@@ -178,6 +188,26 @@ command in an alternative action through embark, for example.")
                    (car files)
                  (workbox--select-project-file "Readme: " files)))
     (user-error "No readme is found")))
+
+;;;###autoload
+(defun workbox-doc ()
+  (interactive)
+  (let* ((pr (or (project-current)
+                 (user-error "You must run this command inside a project")))
+         (dir (workbox--doc-dir pr))
+         (files (if dir
+                    (project-files pr (list dir))
+                  (seq-filter (lambda (file)
+                                (string-match-p workbox-doc-file-regexp file))
+                              (project-files pr)))))
+    (find-file-other-window (workbox--select-project-file "Documentation: " files))))
+
+(defun workbox--doc-dir (pr)
+  (let ((root (project-root pr)))
+    (when-let (dir (seq-find (lambda (file)
+                               (string-match-p workbox-doc-dir-regexp file))
+                             (directory-files root)))
+      (file-name-as-directory (expand-file-name dir root)))))
 
 (provide 'workbox)
 ;;; workbox.el ends here

@@ -10,7 +10,8 @@
   ["Compile and other project commands"
    ("r" workbox-transient-recompile)
    ("c" "Compile at the project root" project-compile)
-   ("m" "Readme" workbox-readme)]
+   ("m" "Readme" workbox-readme)
+   ("d" "Documentation" workbox-doc)]
   (interactive)
   (workbox-locate-package)
   (transient-setup 'workbox-transient))
