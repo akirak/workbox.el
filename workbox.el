@@ -46,6 +46,15 @@
   :prefix "workbox-"
   :group 'project)
 
+(defconst workbox-git-dir ".git")
+
+(defcustom workbox-package-config-alist
+  '(("package.json" :complete-and-run workbox-npm)
+    ("mix.exs" :complete-and-run workbox-mix))
+  ""
+  :type '(alist :key-type file
+                :value-type plist))
+
 (defvar workbox-default-directory nil
   "Directory in which package commands are run.
 
@@ -54,15 +63,64 @@ When commands are completed in `workbox-npm',
 directory of the package. This can be useful for running the
 command in an alternative action through embark, for example.")
 
+(defvar workbox-package-config nil)
+
+(defvar workbox-path-separator nil)
+
 ;;;; Utilities
+
+(cl-defsubst workbox--path-separator ()
+  (or workbox-path-separator
+      (setq workbox-path-separator
+            (string-remove-prefix "a" (file-name-as-directory "a")))))
+
+(defun workbox--parent-dir (dir)
+  (thread-last
+    dir
+    (string-remove-suffix (workbox--path-separator))
+    (file-name-directory)))
+
+;;;; API
+
+(defun workbox-locate-package ()
+  (let ((dir default-directory)
+        (regexp (rx-to-string `(and bol
+                                    (or ,@(mapcar #'car workbox-package-config-alist))
+                                    eol))))
+    (cl-flet
+        ((match (file)
+           (string-match-p regexp file)))
+      (catch 'found
+        (while dir
+          (let ((files (directory-files dir)))
+            (when-let (file (seq-find #'match files))
+              (setq workbox-package-config (assoc file workbox-package-config-alist))
+              (setq workbox-default-directory dir)
+              (throw 'found file))
+            (when (member workbox-git-dir files)
+              (throw 'found nil))
+            (setq dir (workbox--parent-dir dir))))
+        nil))))
 
 (defmacro workbox-with-package-root (filename &rest progn)
   (declare (indent 1))
-  `(let* ((root (or (locate-dominating-file default-directory ,filename)
+  `(let* ((root (or (locate-dominating-file (or workbox-default-directory
+                                                default-directory)
+                                            ,filename)
                     (error "File %s is not found" ,filename)))
           (default-directory root))
      (setq workbox-default-directory root)
      ,@progn))
+
+;;;; Interactive commands
+
+;;;###autoload
+(defun workbox-run-some-package-manager ()
+  (interactive)
+  (if-let* ((package (workbox-locate-package))
+            (cmd (plist-get (cdr workbox-package-config) :complete-and-run)))
+      (call-interactively cmd)
+    (user-error "No package is found")))
 
 (provide 'workbox)
 ;;; workbox.el ends here
