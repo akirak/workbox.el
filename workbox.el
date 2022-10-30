@@ -80,27 +80,50 @@ command in an alternative action through embark, for example.")
     (string-remove-suffix (workbox--path-separator))
     (file-name-directory)))
 
-;;;; API
-
-(defun workbox-locate-package ()
+(defun workbox--locate-file-regexp (regexp)
+  "Return a file matching REGEXP inside the current project."
   (let ((dir default-directory)
-        (pr (project-current))
-        (regexp (rx-to-string `(and bol
-                                    (or ,@(mapcar #'car workbox-package-config-alist))
-                                    eol))))
+        (pr (project-current)))
     (cl-flet
         ((match (file)
            (string-match-p regexp file)))
       (catch 'found
         (while dir
           (when-let (file (seq-find #'match (directory-files dir)))
-            (setq workbox-package-config (assoc file workbox-package-config-alist))
-            (setq workbox-default-directory dir)
-            (throw 'found file))
+            (throw 'found (expand-file-name file dir)))
           (when (and pr (file-equal-p dir (project-root pr)))
             (throw 'found nil))
-          (setq dir (workbox--parent-dir dir)))
-        nil))))
+          (setq dir (workbox--parent-dir dir)))))))
+
+(defun workbox--locate-files-regexp (regexp)
+  "Return files matching REGEXP inside the current project."
+  (let ((dir default-directory)
+        (case-fold-search t)
+        (pr (project-current))
+        results)
+    (cl-flet
+        ((match (file) (string-match-p regexp file)))
+      (catch 'abort
+        (while dir
+          (let ((files (directory-files dir)))
+            (when-let (file (seq-find #'match files))
+              (push (expand-file-name file dir) results)))
+          (when (and pr (file-equal-p dir (project-root pr)))
+            (throw 'abort nil))
+          (setq dir (workbox--parent-dir dir))))
+      (nreverse results))))
+
+;;;; API
+
+(defun workbox-locate-package ()
+  (when-let (file (workbox--locate-file-regexp
+                   (rx-to-string `(and bol
+                                       (or ,@(mapcar #'car workbox-package-config-alist))
+                                       eol))))
+    (let ((sans-dir (file-name-nondirectory file)))
+      (setq workbox-package-config (assoc sans-dir workbox-package-config-alist))
+      (setq workbox-default-directory (file-name-directory file))
+      file)))
 
 (defmacro workbox-with-package-root (filename &rest progn)
   (declare (indent 1))
