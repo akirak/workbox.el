@@ -55,6 +55,10 @@
   :type '(alist :key-type file
                 :value-type plist))
 
+(defcustom workbox-readme-function #'find-file-read-only-other-window
+  "Function used to open a readme file."
+  :type 'function)
+
 (defvar workbox-default-directory nil
   "Directory in which package commands are run.
 
@@ -113,6 +117,25 @@ command in an alternative action through embark, for example.")
           (setq dir (workbox--parent-dir dir))))
       (nreverse results))))
 
+(defun workbox--select-project-file (prompt files)
+  (let* ((prefix-len (when-let (pr (project-current))
+                       (length (expand-file-name (project-root pr)))))
+         (candidates (if prefix-len
+                         (mapcar `(lambda (s)
+                                    (put-text-property 0 ,prefix-len
+                                                       'invisible t
+                                                       s)
+                                    s)
+                                 (mapcar #'expand-file-name files))
+                       files)))
+    (cl-labels
+        ((completions (string pred action)
+           (if (eq action 'metadata)
+               (cons 'metadata
+                     (list (cons 'category 'file)))
+             (complete-with-action action candidates string pred))))
+      (completing-read prompt #'completions))))
+
 ;;;; API
 
 (defun workbox-locate-package ()
@@ -144,6 +167,17 @@ command in an alternative action through embark, for example.")
             (cmd (plist-get (cdr workbox-package-config) :complete-and-run)))
       (call-interactively cmd)
     (user-error "No package is found")))
+
+;;;###autoload
+(defun workbox-readme ()
+  "Browse a readme file in the project."
+  (interactive)
+  (if-let (files (workbox--locate-files-regexp (rx bol "README" (or "." eol))))
+      (funcall workbox-readme-function
+               (if (eq 1 (length files))
+                   (car files)
+                 (workbox--select-project-file "Readme: " files)))
+    (user-error "No readme is found")))
 
 (provide 'workbox)
 ;;; workbox.el ends here

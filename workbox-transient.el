@@ -7,9 +7,10 @@
    workbox-transient-describe-package
    :if (lambda () workbox-package-config)
    ("p" "Run a package command" workbox-run-some-package-manager)]
-  ["Compile"
+  ["Compile and other project commands"
    ("r" workbox-transient-recompile)
-   ("c" "Compile at the project root" project-compile)]
+   ("c" "Compile at the project root" project-compile)
+   ("m" "Readme" workbox-readme)]
   (interactive)
   (workbox-locate-package)
   (transient-setup 'workbox-transient))
