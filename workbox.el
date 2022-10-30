@@ -37,6 +37,7 @@
 (require 'project)
 (require 'cl-lib)
 (require 'subr-x)
+(require 'workbox-utils)
 
 (declare-function pp-display-expression "pp")
 
@@ -44,8 +45,6 @@
   ""
   :prefix "workbox-"
   :group 'project)
-
-(require 'workbox-utils)
 
 (defvar workbox-default-directory nil
   "Directory in which package commands are run.
