@@ -27,10 +27,7 @@
 
 ;;; Commentary:
 
-;; This is a library that provides a helper function fir defining per-project
-;; transient maps. You can define keymaps using `workbox-make-map'
-;; function and dispatch a keymap for the current project using
-;; `workbox-dispatch'.
+;; Run `workbox-transient'.
 
 ;;; Code:
 
