@@ -9,7 +9,9 @@
    ("p" "Run a package command" workbox-run-some-package-manager)]
   ["Compile and other project commands"
    ("r" workbox-transient-recompile)
-   ("c" "Compile at the project root" project-compile)
+   ("c" "Compile at the project root" project-compile)]
+  ["Project documentation"
+   :class transient-row
    ("m" "Readme" workbox-readme)
    ("d" "Documentation" workbox-doc)]
   (interactive)
