@@ -1,5 +1,12 @@
 ;;; workbox-transient.el --- Transient interface -*- lexical-binding: t -*-
 
+(require 'transient)
+(require 'workbox)
+
+(defvar compile-command)
+(defvar compilation-directory)
+(declare-function recompile "compile")
+
 ;;;###autoload (autoload 'workbox-transient "workbox-transient" nil 'interactive)
 (transient-define-prefix workbox-transient ()
   "A convenient transient command for your projects."
