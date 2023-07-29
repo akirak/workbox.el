@@ -29,7 +29,12 @@
      :lock "package-lock.json"
      :install-command "install"
      :script-command "run"
-     :builtin-commands workbox-npm-yarn-commands))
+     :builtin-commands workbox-npm-yarn-commands)
+    ("bun"
+     :lock "bun.lockb"
+     :install-command "bun"
+     :script-command "run"
+     :builtin-commands workbox-npm-bun-commands))
   "Alist of package managers for package.json."
   :type '(alist :key-type string
                 :value-type plist))
@@ -53,6 +58,22 @@
      :description "Check for outdated packages")
     ("exec"
      :description "Executes a shell command in scope of a project"))
+  "List of pnpm subcommands that are not specific to a project."
+  :type 'workbox-npm-subcommands-type)
+
+(defcustom workbox-npm-bun-commands
+  '(("run"
+     :description "Run JavaScript with bun, a package.json script, or a bin")
+    ("build"
+     :description "Build TypeScript and JavaScript into a single file")
+    ("install"
+     :description "Install dependencies")
+    ("add"
+     :description "Add a dependency")
+    ("remove"
+     :description "Remove a dpeendency")
+    ("pm"
+     :description "More commands for managing packages"))
   "List of pnpm subcommands that are not specific to a project."
   :type 'workbox-npm-subcommands-type)
 
