@@ -1,4 +1,6 @@
 * workbox.el
+**This project has been deprecated in favor of a compile-integration in my own Emacs configuration.**
+
 This is a collection of convenient commands for working on projects in various programming languages.
 ** Usage
 Run =workbox-transient=.
